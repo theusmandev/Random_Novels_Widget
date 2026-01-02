@@ -44,22 +44,40 @@ function createPostItem(entry, config) {
   // --- YE LINE MISSING THI, ADD KAR DI HAI ---
   const comments = entry.thr$total ? entry.thr$total.$t + " Comments" : "Comments Disabled";
   
-  // === ✅ MAIN IMAGE FIX ===
-  let thumb = config.noThumb;
+  // // === ✅ MAIN IMAGE FIX ===
+  // let thumb = config.noThumb;
   
-  if (entry.media$thumbnail && entry.media$thumbnail.url) {
-    thumb = entry.media$thumbnail.url;
+  // if (entry.media$thumbnail && entry.media$thumbnail.url) {
+  //   thumb = entry.media$thumbnail.url;
 
-    // 1. YouTube High Quality Fix
-    if (thumb.includes("youtube.com") || thumb.includes("ytimg.com")) {
-        thumb = thumb.replace(/\/default\.jpg|\/mqdefault\.jpg|\/hqdefault\.jpg|\/sddefault\.jpg/, "/maxresdefault.jpg");
-    } 
-    // 2. Blogger Image Fix (Handles w640-h426, s72-c, s1600, etc.)
-    else {
-        thumb = thumb.replace(/\/(s|w|h)\d+[^/]*\//, "/s1600/");
+  //   // 1. YouTube High Quality Fix
+  //   if (thumb.includes("youtube.com") || thumb.includes("ytimg.com")) {
+  //       thumb = thumb.replace(/\/default\.jpg|\/mqdefault\.jpg|\/hqdefault\.jpg|\/sddefault\.jpg/, "/maxresdefault.jpg");
+  //   } 
+  //   // 2. Blogger Image Fix (Handles w640-h426, s72-c, s1600, etc.)
+  //   else {
+  //       thumb = thumb.replace(/\/(s|w|h)\d+[^/]*\//, "/s1600/");
+  //   }
+  // }
+// === ✅ OPTIMIZED IMAGE FIX (Fast + Clear) ===
+    let thumb = config.noThumb;
+
+    if (entry.media$thumbnail && entry.media$thumbnail.url) {
+        thumb = entry.media$thumbnail.url;
+
+        // 1. YouTube: Use mqdefault (Medium Quality is enough for small thumbs)
+        // If you want HD, use hqdefault. maxresdefault is too heavy.
+        if (thumb.includes("youtube.com") || thumb.includes("ytimg.com")) {
+            thumb = thumb.replace(/\/default\.jpg|\/mqdefault\.jpg|\/hqdefault\.jpg|\/sddefault\.jpg/, "/hqdefault.jpg");
+        } 
+        // 2. Blogger Images: Use w400-h400-c (Perfect for widgets)
+        else {
+            // Replaces any size (s72-c, w640-h426, s1600) with w400-h400-c
+            // w400-h400-c = Width 400, Height 400, Crop (Square)
+            thumb = thumb.replace(/\/(s|w|h)\d+[^/]*\//, "/w400-h400-c/");
+        }
     }
-  }
-
+    // ============================================
   let content = entry.summary?.$t || entry.content?.$t || "";
   content = content.replace(/<[^>]*>/g, "");
   if (content.length > config.chars) {
